@@ -11,18 +11,21 @@ from utils.extract_foldseek_scores import process_foldseek_data
 
 if __name__ == '__main__':
 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--structure-embeddings', type=str, required=True)
-    # parser.add_argument('--sequence-embeddings', type=str, required=True)
-    # parser.add_argument('--domains-folder', type=str, required=True)
-    # parser.add_argument('--out_path', type=str, required=True)
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--structure-embeddings', type=str, required=True)
+    parser.add_argument('--sequence-embeddings', type=str, required=True)
+    parser.add_argument('--mean-embeddings', type=str, required=True)
+    parser.add_argument('--results-path', type=str, required=True)
+    parser.add_argument('--domain-classes', type=str, required=True)
+    parser.add_argument('--out-path', type=str, required=True)
+    args = parser.parse_args()
 
-    sequence_embedding_folder = '/home/joan/data/pst_t30_so/scop40/foldseek-5510883'
-    structure_embedding_folder = '/home/joan/data/esm3/scop40/foldseek-33855646'
-    foldseek_domains_folder = '/home/joan/data/scop40pdb/pdb-foldseek'
-    foldseek_results = '/home/joan/data/foldseek-results'
-    foldseek_class = '/home/joan/data/scop-foldseek/scop40_foldseek_class.tsv'
+    structure_embedding_folder = args.structure_embeddings
+    sequence_embedding_folder = args.sequence_embeddings
+    mean_embedding_folder = args.mean_embeddings
+    results_path = args.results_path
+    domain_class_file = args.domain_classes
+    out_path = args.out_path
 
     depth = Depth.scop_family
 
@@ -31,7 +34,7 @@ if __name__ == '__main__':
 
     values = get_sensitivity_query_fraction(
         sequence_embedding_folder,
-        foldseek_class,
+        domain_class_file,
         depth
     )
     plt.plot(
@@ -41,8 +44,19 @@ if __name__ == '__main__':
     )
 
     values = get_sensitivity_query_fraction(
+        mean_embedding_folder,
+        domain_class_file,
+        depth
+    )
+    plt.plot(
+        linspace(0, 1, len(values)),
+        [values[i] for i in range(len(values))],
+        color='orange', linestyle='-', label='Mean ESM3 Embeddings'
+    )
+
+    values = get_sensitivity_query_fraction(
         structure_embedding_folder,
-        foldseek_class,
+        domain_class_file,
         depth
     )
     plt.plot(
@@ -52,9 +66,8 @@ if __name__ == '__main__':
     )
 
     values = process_foldseek_data(
-        f'{foldseek_results}/foldseek.txt',
-        foldseek_class,
-        foldseek_domains_folder,
+        f'{results_path}/foldseek.txt',
+        domain_class_file,
         lambda row: (".".join(row[0].split(".")[:-1]), ".".join(row[1].split(".")[:-1]), int(row[11])),
         depth,
         is_tp,
@@ -67,9 +80,8 @@ if __name__ == '__main__':
     )
 
     values = process_foldseek_data(
-        f'{foldseek_results}/TMalign.txt',
-        foldseek_class,
-        foldseek_domains_folder,
+        f'{results_path}/TMalign.txt',
+        domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
         depth,
         is_tp,
@@ -82,9 +94,8 @@ if __name__ == '__main__':
     )
 
     values = process_foldseek_data(
-        f'{foldseek_results}/dali.txt',
-        foldseek_class,
-        foldseek_domains_folder,
+        f'{results_path}/dali.txt',
+        domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
         depth,
         is_tp,
@@ -97,9 +108,8 @@ if __name__ == '__main__':
     )
 
     values = process_foldseek_data(
-        f'{foldseek_results}/pdb-foldseek-zer.txt',
-        foldseek_class,
-        foldseek_domains_folder,
+        f'{results_path}/pdb-foldseek-zer.txt',
+        domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
         depth,
         is_tp,
@@ -117,5 +127,5 @@ if __name__ == '__main__':
     plt.grid(True)
     # plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"foldseek-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/foldseek-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()

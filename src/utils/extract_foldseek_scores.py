@@ -1,11 +1,10 @@
-import os
+
 from operator import itemgetter
 
 
 def process_foldseek_data(
         score_file,
         class_file,
-        domains_folder,
         row_parser,
         depth,
         is_tp,
@@ -20,8 +19,8 @@ def process_foldseek_data(
         r = row.strip().split("\t")
         scop_map[r[0]] = r[1]
 
-    print(f"Calculating number of class positives {domains_folder}")
-    dom_list = os.listdir(domains_folder)
+    print(f"Calculating number of class positives")
+    dom_list = scop_map.keys()
     for c_i, d_i in set([(scop_map[d_i], d_i) for d_i in dom_list]):
         if c_i in n_classes:
             continue
