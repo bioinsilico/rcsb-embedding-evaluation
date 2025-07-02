@@ -27,10 +27,21 @@ if __name__ == '__main__':
     domain_class_file = args.domain_classes
     out_path = args.out_path
 
-    depth = Depth.scop_family
+    depth = Depth.scop_fold
 
     plt.figure(figsize=(8, 6))
     plt.ylim(0, 1.1)
+
+    values = get_sensitivity_query_fraction(
+        structure_embedding_folder,
+        domain_class_file,
+        depth
+    )
+    plt.plot(
+        linspace(0, 1, len(values)),
+        [values[i] for i in range(len(values))],
+        color='red', linestyle='-', label='Structure Embeddings'
+    )
 
     values = get_sensitivity_query_fraction(
         sequence_embedding_folder,
@@ -51,18 +62,7 @@ if __name__ == '__main__':
     plt.plot(
         linspace(0, 1, len(values)),
         [values[i] for i in range(len(values))],
-        color='orange', linestyle='-', label='Mean ESM3 Embeddings'
-    )
-
-    values = get_sensitivity_query_fraction(
-        structure_embedding_folder,
-        domain_class_file,
-        depth
-    )
-    plt.plot(
-        linspace(0, 1, len(values)),
-        [values[i] for i in range(len(values))],
-        color='red', linestyle='-', label='Structure Embeddings'
+        color='burlywood', linestyle='-', label='ESM3 Mean'
     )
 
     values = process_foldseek_data(
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     plt.ylabel('Sensitivity')
     plt.title('SCOPe Family')
     plt.grid(True)
-    # plt.legend(loc='best')
+    plt.legend(loc='best')
     plt.axis('square')
     plt.savefig(f"{out_path}/foldseek-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
