@@ -27,7 +27,7 @@ if __name__ == '__main__':
     domain_class_file = args.domain_classes
     out_path = args.out_path
 
-    depth = Depth.scop_fold
+    depth = Depth.scop_family
 
     plt.figure(figsize=(8, 6))
     plt.ylim(0, 1.1)
@@ -105,6 +105,20 @@ if __name__ == '__main__':
         linspace(0, 1, len(values)),
         [values[i] for i in range(len(values))],
         color='mediumorchid', linestyle='--', label='Dali'
+    )
+
+    values = process_foldseek_data(
+        f'{results_path}/tmvec.txt',
+        domain_class_file,
+        lambda row: (row[0], row[1], float(row[2])),
+        depth,
+        is_tp,
+        fold_fp
+    )
+    plt.plot(
+        linspace(0, 1, len(values)),
+        [values[i] for i in range(len(values))],
+        color='wheat', linestyle='--', label='TMvec'
     )
 
     values = process_foldseek_data(
