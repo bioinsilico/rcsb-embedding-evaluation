@@ -27,13 +27,14 @@ class Depth:
 
 def depth_name(depth):
     if depth == Depth.scop_family:
-        return "SCOP Family"
+        return "SCOPe Family"
     if depth == Depth.scop_super_family:
-        return "SCOP Super Family"
+        return "SCOPe Super Family"
     if depth == Depth.scop_fold:
-        return "SCOP Fold"
+        return "SCOPe Fold"
     if depth == Depth.scop_family:
-        return "SCOP Class"
+        return "SCOPe Class"
+    raise ValueError("Invalid SCOPe depth")
 
 
 class AnalysisDataset:
@@ -51,8 +52,8 @@ class AnalysisDataset:
         self.embedding_classe_file = embedding_class_file
         self.depth = depth
         self.get_tp = get_tp(self.depth)
-        self.load_embedding()
         self.load_class_number()
+        self.load_embedding()
         self.load_embedding_pairs()
         super().__init__()
 
@@ -76,9 +77,8 @@ class AnalysisDataset:
             self.embeddings[embedding_id] = v
 
     def load_embedding(self):
-        for file in os.listdir(self.embedding_path):
-            embedding_id = ".".join(file.split(".")[0:-1])
-            v = np.array(list(pd.read_csv(f"{self.embedding_path}/{file}").iloc[:, 0].values))
+        for embedding_id in self.embeddings_classes.keys():
+            v = np.array(list(pd.read_csv(f"{self.embedding_path}/{embedding_id}.csv").iloc[:, 0].values))
             norm = np.linalg.norm(v)
             if norm > 0:
                 v = v / norm

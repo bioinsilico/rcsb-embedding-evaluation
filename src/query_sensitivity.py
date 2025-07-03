@@ -3,32 +3,19 @@ import argparse
 from numpy import linspace
 import matplotlib.pyplot as plt
 
-from analysis.analysis_dataset import Depth, is_tp
+from analysis.analysis_dataset import Depth, is_tp, depth_name
 from analysis.stats_tools import get_sensitivity_query_fraction, fold_fp
 from utils.extract_foldseek_scores import process_foldseek_data
 
-
-
-if __name__ == '__main__':
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--structure-embeddings', type=str, required=True)
-    parser.add_argument('--sequence-embeddings', type=str, required=True)
-    parser.add_argument('--mean-embeddings', type=str, required=True)
-    parser.add_argument('--results-path', type=str, required=True)
-    parser.add_argument('--domain-classes', type=str, required=True)
-    parser.add_argument('--out-path', type=str, required=True)
-    args = parser.parse_args()
-
-    structure_embedding_folder = args.structure_embeddings
-    sequence_embedding_folder = args.sequence_embeddings
-    mean_embedding_folder = args.mean_embeddings
-    results_path = args.results_path
-    domain_class_file = args.domain_classes
-    out_path = args.out_path
-
-    depth = Depth.scop_family
-
+def plot_sensitivity(
+    structure_embedding_folder,
+    sequence_embedding_folder,
+    mean_embedding_folder,
+    results_path,
+    domain_class_file,
+    out_path,
+    depth
+):
     plt.figure(figsize=(8, 6))
     plt.ylim(0, 1.1)
 
@@ -137,9 +124,58 @@ if __name__ == '__main__':
 
     plt.xlabel('Fraction of Queries')
     plt.ylabel('Sensitivity')
-    plt.title('SCOPe Family')
+    plt.title(depth_name(depth))
     plt.grid(True)
     plt.legend(loc='best')
     plt.axis('square')
     plt.savefig(f"{out_path}/foldseek-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--structure-embeddings', type=str, required=True)
+    parser.add_argument('--sequence-embeddings', type=str, required=True)
+    parser.add_argument('--mean-embeddings', type=str, required=True)
+    parser.add_argument('--results-path', type=str, required=True)
+    parser.add_argument('--domain-classes', type=str, required=True)
+    parser.add_argument('--out-path', type=str, required=True)
+    args = parser.parse_args()
+
+    structure_embedding_folder = args.structure_embeddings
+    sequence_embedding_folder = args.sequence_embeddings
+    mean_embedding_folder = args.mean_embeddings
+    results_path = args.results_path
+    domain_class_file = args.domain_classes
+    out_path = args.out_path
+
+    plot_sensitivity(
+        structure_embedding_folder,
+        sequence_embedding_folder,
+        mean_embedding_folder,
+        results_path,
+        domain_class_file,
+        out_path,
+        Depth.scop_family
+    )
+
+    plot_sensitivity(
+        structure_embedding_folder,
+        sequence_embedding_folder,
+        mean_embedding_folder,
+        results_path,
+        domain_class_file,
+        out_path,
+        Depth.scop_super_family
+    )
+
+    plot_sensitivity(
+        structure_embedding_folder,
+        sequence_embedding_folder,
+        mean_embedding_folder,
+        results_path,
+        domain_class_file,
+        out_path,
+        Depth.scop_fold
+    )
