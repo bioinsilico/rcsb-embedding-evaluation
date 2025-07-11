@@ -1,15 +1,16 @@
 
 from operator import itemgetter
 
+from tqdm import tqdm
 
-def process_score_pairs(
+from analysis.analysis_dataset import is_fp, is_tp
+
+
+def qs_scores(
         score_file,
         class_file,
         row_parser,
-        depth,
-        is_tp,
-        fold_fp,
-
+        depth
 ):
     scop_map = {}
     n_classes = {}
@@ -41,20 +42,26 @@ def process_score_pairs(
             query_scores[e_i] = []
         if e_j == e_i:
             continue
-        query_scores[e_i].append((e_i, scop_map[e_i], e_j, scop_map[e_j], s))
+        d_i = scop_map[e_i]
+        d_j = scop_map[e_j]
+        tp = is_tp(depth, d_i, d_j)
+        fp = is_fp(d_i, d_j)
+        query_scores[e_i].append((s, tp, fp))
 
     print("Calculating sensitivity scores")
     sen_values = []
-    for d_i in query_scores:
-        if n_classes[scop_map[d_i]] == 0:
-            continue
-        sort_score = sorted(query_scores[d_i], key=itemgetter(4))
-        sort_score.reverse()
-        fp = [idx for (idx, (e_i, c_i, e_j, c_j, s)) in enumerate(sort_score) if fold_fp(c_i, c_j)]
-        fp_idx = fp[0] if len(fp) > 0 else len(sort_score)
-        tp = [(e_i, c_i, e_j, c_j, s) for (e_i, c_i, e_j, c_j, s) in sort_score[0:fp_idx] if is_tp(depth, c_i, c_j)]
-        sen = len(tp) / n_classes[scop_map[d_i]]
-        sen_values.append(sen)
+    with tqdm(total=len(query_scores), desc="Domain Pairs", unit="pair") as pbar:
+        for e_i in query_scores:
+            if n_classes[scop_map[e_i]] == 0:
+                continue
+            sort_score = sorted(query_scores[e_i], key=itemgetter(0))
+            sort_score.reverse()
+            fp = [idx for (idx, (s, tp, fp)) in enumerate(sort_score) if fp]
+            fp_idx = fp[0] if len(fp) > 0 else len(sort_score)
+            tp = [s for (s, tp, fp) in sort_score[0:fp_idx] if tp]
+            sen = len(tp) / n_classes[scop_map[e_i]]
+            sen_values.append(sen)
+            pbar.update(1)
 
     sen_values = sorted(sen_values)
     sen_values.reverse()

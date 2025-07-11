@@ -3,9 +3,9 @@ import argparse
 from numpy import linspace
 import matplotlib.pyplot as plt
 
-from analysis.analysis_dataset import Depth, is_tp, depth_name
-from analysis.stats_tools import get_sensitivity_query_fraction, fold_fp
-from utils.extract_foldseek_scores import process_score_pairs
+from analysis.analysis_dataset import Depth, depth_name
+from analysis.stats_tools import get_sensitivity_query_fraction
+from analysis.query_sensitivity import qs_scores
 
 
 def plot_sensitivity(
@@ -29,13 +29,11 @@ def plot_sensitivity(
         color='red', linestyle='-', label='Structure Embeddings'
     )
 
-    values = process_score_pairs(
+    values = qs_scores(
         f'{results_path}/foldseek.txt',
         domain_class_file,
         lambda row: (row[0], row[1], int(row[11])),
-        depth,
-        is_tp,
-        fold_fp
+        depth
     )
     plt.plot(
         linspace(0, 1, len(values)),

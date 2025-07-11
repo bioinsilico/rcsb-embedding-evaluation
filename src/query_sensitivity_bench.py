@@ -3,14 +3,13 @@ import argparse
 from numpy import linspace
 import matplotlib.pyplot as plt
 
-from analysis.analysis_dataset import Depth, is_tp, depth_name
-from analysis.stats_tools import get_sensitivity_query_fraction, fold_fp
-from utils.extract_foldseek_scores import process_score_pairs
+from analysis.analysis_dataset import Depth, depth_name
+from analysis.query_sensitivity import qs_scores
 
 def plot_sensitivity(
-    structure_embedding_folder,
-    sequence_embedding_folder,
-    mean_embedding_folder,
+    structure_embeddings_score,
+    sequence_embedding_score,
+    mean_embedding_score,
     results_path,
     domain_class_file,
     out_path,
@@ -20,9 +19,10 @@ def plot_sensitivity(
     plt.figure(figsize=(8, 6))
     plt.ylim(0, 1.1)
 
-    values = get_sensitivity_query_fraction(
-        structure_embedding_folder,
+    values = qs_scores(
+        structure_embeddings_score,
         domain_class_file,
+        lambda row: row,
         depth
     )
     plt.plot(
@@ -31,9 +31,10 @@ def plot_sensitivity(
         color='red', linestyle='-', label='Structure Embeddings'
     )
 
-    values = get_sensitivity_query_fraction(
-        sequence_embedding_folder,
+    values = qs_scores(
+        sequence_embedding_score,
         domain_class_file,
+        lambda row: row,
         depth
     )
     plt.plot(
@@ -42,9 +43,10 @@ def plot_sensitivity(
         color='orange', linestyle='-', label='Sequence Embeddings'
     )
 
-    values = get_sensitivity_query_fraction(
-        mean_embedding_folder,
+    values = qs_scores(
+        mean_embedding_score,
         domain_class_file,
+        lambda row: row,
         depth
     )
     plt.plot(
@@ -53,13 +55,11 @@ def plot_sensitivity(
         color='burlywood', linestyle='-', label='ESM3 Mean'
     )
 
-    values = process_score_pairs(
+    values = qs_scores(
         f'{results_path}/foldseek.txt',
         domain_class_file,
         lambda row: (".".join(row[0].split(".")[:-1]), ".".join(row[1].split(".")[:-1]), int(row[11])),
-        depth,
-        is_tp,
-        fold_fp
+        depth
     )
     plt.plot(
         linspace(0, 1, len(values)),
@@ -67,13 +67,11 @@ def plot_sensitivity(
         color='dodgerblue', linestyle='--', label='Foldseek'
     )
 
-    values = process_score_pairs(
+    values = qs_scores(
         f'{results_path}/TMalign.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
-        depth,
-        is_tp,
-        fold_fp
+        depth
     )
     plt.plot(
         linspace(0, 1, len(values)),
@@ -81,13 +79,11 @@ def plot_sensitivity(
         color='limegreen', linestyle='--', label='TMalign'
     )
 
-    values = process_score_pairs(
+    values = qs_scores(
         f'{results_path}/dali.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
-        depth,
-        is_tp,
-        fold_fp
+        depth
     )
     plt.plot(
         linspace(0, 1, len(values)),
@@ -95,13 +91,11 @@ def plot_sensitivity(
         color='mediumorchid', linestyle='--', label='Dali'
     )
 
-    values = process_score_pairs(
+    values = qs_scores(
         f'{results_path}/tmvec.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
-        depth,
-        is_tp,
-        fold_fp
+        depth
     )
     plt.plot(
         linspace(0, 1, len(values)),
@@ -109,13 +103,11 @@ def plot_sensitivity(
         color='wheat', linestyle='--', label='TMvec'
     )
 
-    values = process_score_pairs(
+    values = qs_scores(
         f'{results_path}/pdb-foldseek-zer.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
-        depth,
-        is_tp,
-        fold_fp
+        depth
     )
     plt.plot(
         linspace(0, 1, len(values)),
@@ -130,32 +122,32 @@ def plot_sensitivity(
     if legend:
         plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/foldseek-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/qs-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--structure-embeddings', type=str, required=True)
-    parser.add_argument('--sequence-embeddings', type=str, required=True)
-    parser.add_argument('--mean-embeddings', type=str, required=True)
+    parser.add_argument('--structure-embeddings-score', type=str, required=True)
+    parser.add_argument('--sequence-embeddings-score', type=str, required=True)
+    parser.add_argument('--mean-embeddings-score', type=str, required=True)
     parser.add_argument('--results-path', type=str, required=True)
     parser.add_argument('--domain-classes', type=str, required=True)
     parser.add_argument('--out-path', type=str, required=True)
     args = parser.parse_args()
 
-    structure_embedding_folder = args.structure_embeddings
-    sequence_embedding_folder = args.sequence_embeddings
-    mean_embedding_folder = args.mean_embeddings
+    structure_embeddings_score = args.structure_embeddings_score
+    sequence_embedding_score = args.sequence_embeddings_score
+    mean_embedding_score = args.mean_embeddings_score
     results_path = args.results_path
     domain_class_file = args.domain_classes
     out_path = args.out_path
 
     plot_sensitivity(
-        structure_embedding_folder,
-        sequence_embedding_folder,
-        mean_embedding_folder,
+        structure_embeddings_score,
+        sequence_embedding_score,
+        mean_embedding_score,
         results_path,
         domain_class_file,
         out_path,
@@ -163,9 +155,9 @@ if __name__ == '__main__':
     )
 
     plot_sensitivity(
-        structure_embedding_folder,
-        sequence_embedding_folder,
-        mean_embedding_folder,
+        structure_embeddings_score,
+        sequence_embedding_score,
+        mean_embedding_score,
         results_path,
         domain_class_file,
         out_path,
@@ -173,9 +165,9 @@ if __name__ == '__main__':
     )
 
     plot_sensitivity(
-        structure_embedding_folder,
-        sequence_embedding_folder,
-        mean_embedding_folder,
+        structure_embeddings_score,
+        sequence_embedding_score,
+        mean_embedding_score,
         results_path,
         domain_class_file,
         out_path,
