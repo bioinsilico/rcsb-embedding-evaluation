@@ -2,7 +2,7 @@
 from operator import itemgetter
 
 
-def process_foldseek_data(
+def process_score_pairs(
         score_file,
         class_file,
         row_parser,

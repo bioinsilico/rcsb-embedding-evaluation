@@ -1,6 +1,5 @@
-import os
+
 import pandas as pd
-import numpy as np
 
 
 def get_tp(depth):
@@ -17,6 +16,12 @@ def is_tp(depth, d_i, d_j):
         c_j, x_j = get_tp(depth)(d_j)
         return c_i == c_j and x_i != x_j
 
+def is_fp(d_i, d_j):
+    c_tree = d_i.split(".")
+    c_anchor_tree = d_j.split(".")
+    if c_tree[0] == c_anchor_tree[0] and c_tree[1] == c_anchor_tree[1]:
+        return False
+    return True
 
 class Depth:
     scop_class = 1
@@ -32,7 +37,7 @@ def depth_name(depth):
         return "SCOPe Super Family"
     if depth == Depth.scop_fold:
         return "SCOPe Fold"
-    if depth == Depth.scop_family:
+    if depth == Depth.scop_class:
         return "SCOPe Class"
     raise ValueError("Invalid SCOPe depth")
 
@@ -40,52 +45,26 @@ def depth_name(depth):
 class AnalysisDataset:
     def __init__(
             self,
-            embedding_path,
-            embedding_class_file,
-            depth=Depth.scop_family
+            score_file,
+            score_row_parser,
+            dom_class_file,
+            depth=Depth.scop_family,
+            score_reverse=False
     ):
-        self.embedding_pairs = []
+        self.score_pairs = pd.DataFrame()
         self.embeddings = {}
         self.embeddings_classes = {}
         self.n_classes = {}
-        self.embedding_path = embedding_path
-        self.embedding_classe_file = embedding_class_file
+        self.score_file = score_file
+        self.score_row_parser = score_row_parser
+        self.dom_class_file = dom_class_file
+        self.n_pos = 0
         self.depth = depth
-        self.get_tp = get_tp(self.depth)
         self.load_class_number()
-        self.load_embedding()
-        self.load_embedding_pairs()
-        super().__init__()
-
-    def load_embedding_int8(self):
-        min_val = 1000
-        max_val = 0
-        for file in os.listdir(self.embedding_path):
-            embedding_id = ".".join(file.split(".")[0:-1])
-            v = np.array(list(pd.read_csv(f"{self.embedding_path}/{file}", header=None).iloc[:, 0].values))
-            if v.min() < min_val:
-                min_val = v.min()
-            if v.max() > max_val:
-                max_val = v.max()
-            self.embeddings[embedding_id] = v
-        for embedding_id in self.embeddings:
-            v = self.embeddings[embedding_id]
-            v = np.round((v - min_val) * 255.0 / (max_val - min_val)).astype(np.uint8)
-            norm = np.linalg.norm(v)
-            if norm > 0:
-                v = v / norm
-            self.embeddings[embedding_id] = v
-
-    def load_embedding(self):
-        for embedding_id in self.embeddings_classes.keys():
-            v = np.array(list(pd.read_csv(f"{self.embedding_path}/{embedding_id}.csv").iloc[:, 0].values))
-            norm = np.linalg.norm(v)
-            if norm > 0:
-                v = v / norm
-            self.embeddings[embedding_id] = v
+        self.load_embedding_pairs(score_reverse=score_reverse)
 
     def load_class_number(self):
-        scop_classes = [(row.strip().split("\t")[0], row.strip().split("\t")[1]) for row in open(self.embedding_classe_file)]
+        scop_classes = [(row.strip().split("\t")[0], row.strip().split("\t")[1]) for row in open(self.dom_class_file)]
         for e_i, d_i in scop_classes:
             self.embeddings_classes[e_i] = d_i
             self.n_classes[e_i] = 0
@@ -95,32 +74,40 @@ class AnalysisDataset:
                 if is_tp(self.depth, d_i, d_j):
                     self.n_classes[e_i] += 1
 
-    def load_embedding_pairs(self):
-        ids = list(self.embeddings.keys())
+    def parse_score_file(self):
         n_pos = 0
         n_neg = 0
-        while len(ids) > 0:
-            embedding_i = ids.pop()
-            for embedding_j in ids:
-                pred = 1 if self.embeddings_classes[embedding_i] == self.embeddings_classes[embedding_j] else 0
-                if pred == 1:
-                    n_pos += 1
-                else:
-                    n_neg += 1
-                self.embedding_pairs.append([
-                    embedding_i,
-                    embedding_j,
-                    pred
-                ])
+        print(f"Parsing {self.score_file}")
+        for r in open(self.score_file, 'r'):
+            e_i, e_j, s = self.score_row_parser(r.strip().split('\t'))
+            if e_i == e_j:
+                continue
+            if self.n_classes[e_i] == 0 or self.n_classes[e_j] == 0:
+                continue
+            d_i = self.embeddings_classes[e_i]
+            d_j = self.embeddings_classes[e_j]
+            tp = is_tp(self.depth, d_i, d_j)
+            fp = is_fp(d_i, d_j)
+            n_pos += tp
+            n_neg += fp
+            yield s, tp, fp
+        self.n_pos = n_pos
         print(f"Number of positives: {n_pos}, negatives: {n_neg}")
 
+    def load_embedding_pairs(self, score_reverse=False):
+        self.score_pairs = pd.DataFrame(self.parse_score_file(), columns=['score', 'tp', 'fp'])
+        self.score_pairs = self.score_pairs.sort_values(by='score', ascending=score_reverse)
+
+    def reload_embedding_pairs(self, score_file, score_row_parser, score_reverse=False):
+        self.score_file = score_file
+        self.score_row_parser = score_row_parser
+        self.load_embedding_pairs(score_reverse=score_reverse)
+
     def pairs(self):
-        for embedding_pair in self.embedding_pairs:
-            yield (
-                self.embeddings[embedding_pair[0]],
-                self.embeddings[embedding_pair[1]],
-                embedding_pair[2]
-            )
+        return self.score_pairs[['tp', 'fp']].itertuples(index=False, name=None)
+
+    def pairs_len(self):
+        return len(self.score_pairs)
 
     def domains(self, n=1):
         for embedding_id in [
@@ -136,3 +123,6 @@ class AnalysisDataset:
 
     def get_n_classes(self, name):
         return self.n_classes[name]
+
+    def get_n_pos(self):
+        return self.n_pos

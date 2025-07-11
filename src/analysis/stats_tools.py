@@ -1,10 +1,10 @@
-import random
 
 import numpy as np
 from numpy import dot
 from operator import itemgetter
 from scipy.stats import spearmanr, pearsonr, kendalltau
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 from analysis.analysis_dataset import AnalysisDataset, is_tp
 from analysis.correlation_dataset import CorrelationDataset
@@ -49,20 +49,26 @@ def get_sensitivity_query_fraction(
     return sen_values
 
 
-def if_with_probability(probability):
-    """
-    Executes an action with a specified probability.
+def pr_curve(dataloader):
+    n_tp = 0
+    n_fp = 0
+    recall = [0]
+    precision = [1]
 
-    Parameters:
-        probability (float): The probability of executing the action (0.0 to 1.0).
+    with tqdm(total=dataloader.pairs_len(), desc="Domain Pairs", unit="pair") as pbar:
+        n_pos = dataloader.get_n_pos()
+        for idx, (tp, fp) in enumerate(dataloader.pairs()):
+            if idx > 0 and idx % 1000 == 0 and (n_tp+n_fp) > 0:
+                recall.append(n_tp / n_pos)
+                precision.append(n_tp / (n_tp+n_fp))
+            n_fp += fp
+            n_tp += tp
+            pbar.update(1)
 
-    Returns:
-        bool: True if the action is executed (based on the probability), False otherwise.
-    """
-    if not (0.0 <= probability <= 1.0):
-        raise ValueError("Probability must be between 0.0 and 1.0")
+    recall.append(n_tp / n_pos)
+    precision.append(n_tp / (n_tp+n_fp))
 
-    return random.random() < probability
+    return recall, precision
 
 
 def plot_2d_points(points, title="2D Point Plot", xlabel="TM-score", ylabel="pTM-score",

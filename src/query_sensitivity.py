@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from analysis.analysis_dataset import Depth, is_tp, depth_name
 from analysis.stats_tools import get_sensitivity_query_fraction, fold_fp
-from utils.extract_foldseek_scores import process_foldseek_data
+from utils.extract_foldseek_scores import process_score_pairs
 
 def plot_sensitivity(
     structure_embedding_folder,
@@ -14,7 +14,8 @@ def plot_sensitivity(
     results_path,
     domain_class_file,
     out_path,
-    depth
+    depth,
+    legend=False
 ):
     plt.figure(figsize=(8, 6))
     plt.ylim(0, 1.1)
@@ -52,7 +53,7 @@ def plot_sensitivity(
         color='burlywood', linestyle='-', label='ESM3 Mean'
     )
 
-    values = process_foldseek_data(
+    values = process_score_pairs(
         f'{results_path}/foldseek.txt',
         domain_class_file,
         lambda row: (".".join(row[0].split(".")[:-1]), ".".join(row[1].split(".")[:-1]), int(row[11])),
@@ -66,7 +67,7 @@ def plot_sensitivity(
         color='dodgerblue', linestyle='--', label='Foldseek'
     )
 
-    values = process_foldseek_data(
+    values = process_score_pairs(
         f'{results_path}/TMalign.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
@@ -80,7 +81,7 @@ def plot_sensitivity(
         color='limegreen', linestyle='--', label='TMalign'
     )
 
-    values = process_foldseek_data(
+    values = process_score_pairs(
         f'{results_path}/dali.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
@@ -94,7 +95,7 @@ def plot_sensitivity(
         color='mediumorchid', linestyle='--', label='Dali'
     )
 
-    values = process_foldseek_data(
+    values = process_score_pairs(
         f'{results_path}/tmvec.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
@@ -108,7 +109,7 @@ def plot_sensitivity(
         color='wheat', linestyle='--', label='TMvec'
     )
 
-    values = process_foldseek_data(
+    values = process_score_pairs(
         f'{results_path}/pdb-foldseek-zer.txt',
         domain_class_file,
         lambda row: (row[0], row[1], float(row[2])),
@@ -126,7 +127,8 @@ def plot_sensitivity(
     plt.ylabel('Sensitivity')
     plt.title(depth_name(depth))
     plt.grid(True)
-    plt.legend(loc='best')
+    if legend:
+        plt.legend(loc='best')
     plt.axis('square')
     plt.savefig(f"{out_path}/foldseek-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
@@ -177,5 +179,6 @@ if __name__ == '__main__':
         results_path,
         domain_class_file,
         out_path,
-        Depth.scop_fold
+        Depth.scop_fold,
+        legend=True
     )

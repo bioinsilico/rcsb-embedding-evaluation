@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from analysis.analysis_dataset import Depth, is_tp, depth_name
 from analysis.stats_tools import get_sensitivity_query_fraction, fold_fp
-from utils.extract_foldseek_scores import process_foldseek_data
+from utils.extract_foldseek_scores import process_score_pairs
 
 
 def plot_sensitivity(
@@ -29,7 +29,7 @@ def plot_sensitivity(
         color='red', linestyle='-', label='Structure Embeddings'
     )
 
-    values = process_foldseek_data(
+    values = process_score_pairs(
         f'{results_path}/foldseek.txt',
         domain_class_file,
         lambda row: (row[0], row[1], int(row[11])),
