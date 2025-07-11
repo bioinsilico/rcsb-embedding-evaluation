@@ -111,7 +111,7 @@ def plot_pr(
     if legend:
         plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/foldseek-{depth}-pr-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/pr-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
 
     plt.show()
 
