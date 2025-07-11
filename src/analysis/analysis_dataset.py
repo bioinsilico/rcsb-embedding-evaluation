@@ -55,10 +55,14 @@ class AnalysisDataset:
         self.embeddings = {}
         self.embeddings_classes = {}
         self.n_classes = {}
+        self.n_fam = {}
+        self.n_sfam = {}
+        self.n_fold = {}
         self.score_file = score_file
         self.score_row_parser = score_row_parser
         self.dom_class_file = dom_class_file
         self.n_pos = 0
+        self.w_pos = 0
         self.depth = depth
         self.load_class_number()
         self.load_embedding_pairs(score_reverse=score_reverse)
@@ -68,11 +72,20 @@ class AnalysisDataset:
         for e_i, d_i in scop_classes:
             self.embeddings_classes[e_i] = d_i
             self.n_classes[e_i] = 0
+            self.n_fam[e_i] = 0
+            self.n_sfam[e_i] = 0
+            self.n_fold[e_i] = 0
             for e_j, d_j in scop_classes:
                 if e_j == e_i:
                     continue
                 if is_tp(self.depth, d_i, d_j):
                     self.n_classes[e_i] += 1
+                if is_tp(Depth.scop_family, d_i, d_j):
+                    self.n_fam[e_i] += 1
+                if is_tp(Depth.scop_super_family, d_i, d_j):
+                    self.n_sfam[e_i] += 1
+                if is_tp(Depth.scop_fold, d_i, d_j):
+                    self.n_fold[e_i] += 1
 
     def parse_score_file(self):
         n_pos = 0
@@ -86,8 +99,12 @@ class AnalysisDataset:
                 continue
             d_i = self.embeddings_classes[e_i]
             d_j = self.embeddings_classes[e_j]
-            tp = is_tp(self.depth, d_i, d_j)
-            fp = is_fp(d_i, d_j)
+            tp = 0
+            if is_tp(self.depth, d_i, d_j):
+                tp = self.tp_weight(e_i)
+            fp = 0
+            if is_fp(d_i, d_j):
+                fp = self.fp_weight(e_i)
             n_pos += tp
             n_neg += fp
             yield s, tp, fp
@@ -126,3 +143,17 @@ class AnalysisDataset:
 
     def get_n_pos(self):
         return self.n_pos
+
+    def tp_weight(self, e_i):
+        if self.depth == Depth.scop_family:
+            return 1 / self.n_fam[e_i]
+        if self.depth == Depth.scop_super_family:
+            return 1 / self.n_sfam[e_i]
+        if self.depth == Depth.scop_fold:
+            return 1 / self.n_fold[e_i]
+        raise Exception(f"Unknown depth {self.depth}")
+
+    def fp_weight(self, e_i):
+        norm = self.n_fold[e_i] + self.n_sfam[e_i] + self.n_fam[e_i]
+        norm = 1 if norm == 0 else norm
+        return 1 / norm

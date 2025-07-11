@@ -29,7 +29,7 @@ def plot_pr(
     pr_auc = auc(recall, precision)
     print(f"AUC {label}", pr_auc)
 
-    label='Sequence Embeddings'
+    """label='Sequence Embeddings'
     dataloader.reload_embedding_pairs(
         score_file=sequence_embeddings_score,
         score_row_parser=lambda row: row
@@ -47,7 +47,7 @@ def plot_pr(
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='burlywood', linestyle='-', label=label)
     pr_auc = auc(recall, precision)
-    print(f"AUC {label}", pr_auc)
+    print(f"AUC {label}", pr_auc)"""
 
     label='Foldseek'
     dataloader.reload_embedding_pairs(
@@ -82,7 +82,7 @@ def plot_pr(
     pr_auc = auc(recall, precision)
     print(f"AUC {label}", pr_auc)
 
-    label='TMvec'
+    """label='TMvec'
     dataloader.reload_embedding_pairs(
         score_file=f"{results_path}/tmvec.txt",
         score_row_parser=lambda row: (row[0], row[1], float(row[2])),
@@ -102,7 +102,7 @@ def plot_pr(
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='yellowgreen', linestyle='--', label=label)
     pr_auc = auc(recall, precision)
-    print(f"AUC {label}", pr_auc)
+    print(f"AUC {label}", pr_auc)"""
 
     plt.xlabel('Recall')
     plt.ylabel('Precision')
@@ -111,7 +111,7 @@ def plot_pr(
     if legend:
         plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/foldseek-{depth}-pr-benchmark.png", bbox_inches='tight', dpi=300)
+    #plt.savefig(f"{out_path}/pr-{depth}-benchmark.png", bbox_inches='tight', dpi=300)
 
     plt.show()
 
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         legend=False
     )
 
-    plot_pr(
+    """plot_pr(
         structure_embeddings_score ,
         sequence_embeddings_score,
         mean_embeddings_score ,
@@ -163,4 +163,4 @@ if __name__ == '__main__':
         out_path,
         Depth.scop_fold,
         legend=True
-    )
+    )"""
