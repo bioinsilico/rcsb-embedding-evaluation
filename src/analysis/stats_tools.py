@@ -6,8 +6,9 @@ from scipy.stats import spearmanr, pearsonr, kendalltau
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-from analysis.analysis_dataset import AnalysisDataset, is_tp
+from analysis.analysis_dataset import is_tp
 from analysis.correlation_dataset import CorrelationDataset
+from analysis.embedding_dataset import EmbeddingDataset
 
 
 def fold_fp(c, c_anchor):
@@ -23,7 +24,7 @@ def get_sensitivity_query_fraction(
         embedding_class_file,
         depth
 ):
-    dataloader = AnalysisDataset(
+    dataloader = EmbeddingDataset(
         embedding_path,
         embedding_class_file,
         depth
@@ -36,7 +37,7 @@ def get_sensitivity_query_fraction(
             (dom_j, dataloader.get_class(dom_j), dot(embedding_i, embedding_j))
             for dom_j, embedding_j in dataloader.domains(n=0)
         ]
-        sort_score = sorted([(d, c, '%.2f' % s) for (d, c, s) in score if dom_i != d], key=itemgetter(2))
+        sort_score = sorted([(d, c, '%.15f' % s) for (d, c, s) in score if dom_i != d], key=itemgetter(2))
         sort_score.reverse()
         fp_idx = [idx for (idx, (d, c, s)) in enumerate(sort_score) if fold_fp(c, class_i)][0]
         tp = [(d, c, s) for (d, c, s) in sort_score[0:fp_idx] if is_tp(depth, class_i, c)]
