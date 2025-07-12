@@ -1,4 +1,3 @@
-import os
 
 import numpy as np
 import pandas as pd
@@ -19,18 +18,17 @@ class EmbeddingDataset:
         self.embedding_path = embedding_path
         self.embedding_class_file = embedding_class_file
         self.depth = depth
-        self.load_embedding()
         self.load_class_number()
+        self.load_embedding()
         super().__init__()
 
     def load_embedding(self):
-        for file in os.listdir(self.embedding_path):
-            embedding_id = ".".join(file.split(".")[0:-1])
-            v = np.array(list(pd.read_csv(f"{self.embedding_path}/{file}").iloc[:, 0].values))
+        for e_i in self.embeddings_classes.keys():
+            v = np.array(list(pd.read_csv(f"{self.embedding_path}/{e_i}.csv").iloc[:, 0].values))
             norm = np.linalg.norm(v)
             if norm > 0:
                 v = v / norm
-            self.embeddings[embedding_id] = v
+            self.embeddings[e_i] = v
 
     def load_class_number(self):
         scop_classes = [(row.strip().split("\t")[0], row.strip().split("\t")[1]) for row in open(self.embedding_class_file)]
@@ -44,11 +42,8 @@ class EmbeddingDataset:
                     self.n_classes[e_i] += 1
 
     def domains(self, n=1):
-        for embedding_id in [
-            e for e in self.embeddings
-            if e in self.embeddings_classes and self.n_classes[e] >= n
-        ]:
-            yield embedding_id, self.embeddings[embedding_id]
+        for e_i in [e for e in self.embeddings_classes if self.n_classes[e] >= n]:
+            yield e_i, self.embeddings[e_i]
 
     def get_class(self, dom):
         if dom not in self.embeddings_classes:

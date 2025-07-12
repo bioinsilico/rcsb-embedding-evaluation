@@ -10,7 +10,8 @@ def qs_scores(
         score_file,
         class_file,
         row_parser,
-        depth
+        depth,
+        reverse=True
 ):
     scop_map = {}
     n_classes = {}
@@ -55,7 +56,8 @@ def qs_scores(
             if n_classes[scop_map[e_i]] == 0:
                 continue
             sort_score = sorted(query_scores[e_i], key=itemgetter(0))
-            sort_score.reverse()
+            if reverse:
+                sort_score.reverse()
             fp = [idx for (idx, (s, tp, fp)) in enumerate(sort_score) if fp]
             fp_idx = fp[0] if len(fp) > 0 else len(sort_score)
             tp = [s for (s, tp, fp) in sort_score[0:fp_idx] if tp]
