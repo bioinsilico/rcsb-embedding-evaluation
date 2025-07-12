@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from analysis.analysis_dataset import Depth, get_tp, is_tp
+from analysis.analysis_dataset import Depth, is_tp
 
 
 class EmbeddingDataset:
@@ -13,14 +13,12 @@ class EmbeddingDataset:
             embedding_class_file,
             depth=Depth.scop_family
     ):
-        self.embedding_pairs = []
         self.embeddings = {}
         self.embeddings_classes = {}
         self.n_classes = {}
         self.embedding_path = embedding_path
         self.embedding_class_file = embedding_class_file
         self.depth = depth
-        self.get_tp = get_tp(self.depth)
         self.load_embedding()
         self.load_class_number()
         super().__init__()
