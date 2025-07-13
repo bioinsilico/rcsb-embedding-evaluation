@@ -10,8 +10,8 @@ from analysis.query_sensitivity import qs_scores
 
 def plot_sensitivity(
     structure_embedding_folder,
-    foldsee_results,
     domain_class_file,
+    results_path,
     out_path,
     depth,
     out_tag
@@ -31,7 +31,7 @@ def plot_sensitivity(
     )
 
     values = qs_scores(
-        foldsee_results,
+        f"{results_path}/foldseek-exc-{out_tag}.txt",
         domain_class_file,
         lambda row: (row[0], row[1], float(row[11])),
         depth
@@ -40,6 +40,18 @@ def plot_sensitivity(
         linspace(0, 1, len(values)),
         [values[i] for i in range(len(values))],
         color='dodgerblue', linestyle='--', label='Foldseek'
+    )
+
+    values = qs_scores(
+        f"{results_path}/TMalign-exc-{out_tag}.txt",
+        domain_class_file,
+        lambda row: (row[0], row[1], float(row[2])),
+        depth
+    )
+    plt.plot(
+        linspace(0, 1, len(values)),
+        [values[i] for i in range(len(values))],
+        color='limegreen', linestyle='--', label='TMalign'
     )
 
     plt.xlabel('Fraction of Queries')
@@ -56,22 +68,22 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--structure-embeddings', type=str, required=True)
-    parser.add_argument('--foldseek-results', type=str, required=True)
+    parser.add_argument('--results-path', type=str, required=True)
     parser.add_argument('--domain-classes', type=str, required=True)
     parser.add_argument('--out-path', type=str, required=True)
     parser.add_argument('--out-tag', type=str, required=True)
     args = parser.parse_args()
 
     structure_embedding_folder = args.structure_embeddings
-    foldseek_results = args.foldseek_results
     domain_class_file = args.domain_classes
+    results_path = args.results_path
     out_path = args.out_path
     out_tag = args.out_tag
 
     plot_sensitivity(
         structure_embedding_folder,
-        foldseek_results,
         domain_class_file,
+        results_path,
         out_path,
         Depth.scop_family,
         out_tag
@@ -79,8 +91,8 @@ if __name__ == '__main__':
 
     plot_sensitivity(
         structure_embedding_folder,
-        foldseek_results,
         domain_class_file,
+        results_path,
         out_path,
         Depth.scop_super_family,
         out_tag
@@ -88,8 +100,8 @@ if __name__ == '__main__':
 
     plot_sensitivity(
         structure_embedding_folder,
-        foldseek_results,
         domain_class_file,
+        results_path,
         out_path,
         Depth.scop_fold,
         out_tag
