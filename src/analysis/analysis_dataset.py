@@ -109,13 +109,6 @@ class AnalysisDataset:
     def pairs_len(self):
         return len(self.score_pairs)
 
-    def domains(self, n=1):
-        for embedding_id in [
-            e for e in self.embeddings
-            if e in self.embeddings_classes and self.n_classes[e] >= n
-        ]:
-            yield embedding_id, self.embeddings[embedding_id]
-
     def get_class(self, dom):
         if dom not in self.embeddings_classes:
             raise Exception(f"Undefined class for domain: {dom}")
