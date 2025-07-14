@@ -46,7 +46,7 @@ class TMscoreDataset:
                 if e_i in self.alt_scores and e_j in self.alt_scores[e_i]:
                     s_p = self.alt_scores[e_i][e_j]
                 elif len(self.alt_scores) > 0:
-                    s_p = 1e6
+                    continue
                 if e_i == e_j:
                     continue
                 tp = 1 if s >= self.tp_thr else 0
