@@ -4,7 +4,6 @@ from numpy import dot
 from operator import itemgetter
 from scipy.stats import spearmanr, pearsonr, kendalltau
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 
 from analysis.analysis_dataset import is_tp
 from analysis.correlation_dataset import CorrelationDataset
@@ -56,15 +55,13 @@ def pr_curve(dataloader):
     recall = [0]
     precision = [1]
 
-    with tqdm(total=dataloader.pairs_len(), desc="Domain Pairs", unit="pair") as pbar:
-        n_pos = dataloader.get_n_pos()
-        for idx, (tp, fp) in enumerate(dataloader.pairs()):
-            if idx > 0 and idx % 1000 == 0 and (n_tp+n_fp) > 0:
-                recall.append(n_tp / n_pos)
-                precision.append(n_tp / (n_tp+n_fp))
-            n_fp += fp
-            n_tp += tp
-            pbar.update(1)
+    n_pos = dataloader.get_n_pos()
+    for idx, (tp, fp) in enumerate(dataloader.pairs()):
+        if idx > 0 and idx % 1000 == 0 and (n_tp+n_fp) > 0:
+            recall.append(n_tp / n_pos)
+            precision.append(n_tp / (n_tp+n_fp))
+        n_fp += fp
+        n_tp += tp
 
     recall.append(n_tp / n_pos)
     precision.append(n_tp / (n_tp+n_fp))

@@ -1,3 +1,5 @@
+import argparse
+
 from matplotlib import pyplot as plt
 from sklearn.metrics import auc
 
@@ -6,23 +8,48 @@ from analysis.tmscore_dataset import TMscoreDataset
 
 if __name__ == '__main__':
 
-    THR = 0.8
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--pdb-chain-ptm-scores', type=str, required=True)
+    parser.add_argument('--tmvec-scores', type=str, required=True)
+    parser.add_argument('--foldseek-scores', type=str, required=True)
+    parser.add_argument('--tmscore-threshold', type=float, required=True)
+    parser.add_argument('--out-path', type=str, required=True)
+    args = parser.parse_args()
+
+    pdb_chain_ptm_scores = args.pdb_chain_ptm_scores
+    tmvec_scores = args.tmvec_scores
+    foldseek_scores = args.foldseek_scores
+    tmscore_threshold = args.tmscore_threshold
+    out_path = args.out_path
 
     label='Structure Embeddings'
     dataloader = TMscoreDataset(
-        tmscore_file="/home/joan/data/foldseek-rcsb/pdb-chain-ptm-scores.csv",
-        thr=THR
+        tmscore_file=pdb_chain_ptm_scores,
+        thr=tmscore_threshold
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='red', linestyle='-', label=label)
     pr_auc = auc(recall, precision)
     print(f"AUC {label}", pr_auc)
 
+    label='TMvec'
+    dataloader = TMscoreDataset(
+        tmscore_file=pdb_chain_ptm_scores,
+        thr=tmscore_threshold,
+        alt_scores_file=tmvec_scores,
+        row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[2])),
+    )
+
+    recall, precision = pr_curve(dataloader)
+    plt.plot(recall, precision, color='wheat', linestyle='--', label=label)
+    pr_auc = auc(recall, precision)
+    print(f"AUC {label}", pr_auc)
+
     label='Foldseek'
     dataloader = TMscoreDataset(
-        tmscore_file="/home/joan/data/foldseek-rcsb/pdb-chain-ptm-scores.csv",
-        thr=THR,
-        alt_scores_file="/home/joan/data/foldseek-rcsb/foldseek-exp.m8",
+        tmscore_file=pdb_chain_ptm_scores,
+        thr=tmscore_threshold,
+        alt_scores_file=foldseek_scores,
         row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[10])),
         reverse=False
     )
@@ -34,8 +61,10 @@ if __name__ == '__main__':
 
     plt.xlabel('Recall')
     plt.ylabel('Precision')
+    plt.title(f"TP TMscore > {tmscore_threshold}")
     plt.grid(True)
+    plt.legend(loc='best')
     plt.axis('square')
-
+    plt.savefig(f"{out_path}/pr-chain-{tmscore_threshold}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
 

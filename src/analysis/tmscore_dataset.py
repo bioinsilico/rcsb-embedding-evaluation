@@ -46,7 +46,7 @@ class TMscoreDataset:
                 if e_i in self.alt_scores and e_j in self.alt_scores[e_i]:
                     s_p = self.alt_scores[e_i][e_j]
                 elif len(self.alt_scores) > 0:
-                    continue
+                    s_p = 0.0 if self.reverse else 1e6
                 if e_i == e_j:
                     continue
                 tp = 1 if s >= self.tp_thr else 0
@@ -67,14 +67,17 @@ class TMscoreDataset:
             self.score_pairs[e_i].append((e_j, s, tp, fp))
 
     def pairs(self):
-        _scores = [(s, tp, fp) for _values in self.score_pairs.values() for (e_j, s, tp, fp) in _values]
+        _scores = self.__get_score_pairs()
         _scores = sorted(_scores, key=itemgetter(0))
         if self.reverse:
             _scores.reverse()
         return [(tp, fp) for s, tp, fp in _scores]
 
     def pairs_len(self):
-        return sum(len(v) for v in self.score_pairs.values())
+        return len(self.__get_score_pairs())
+
+    def __get_score_pairs(self):
+        return [(s, tp, fp) for e_i ,_values in self.score_pairs.items() if self.n_classes[e_i] > 0 for (e_j, s, tp, fp) in _values if self.n_classes[e_j] > 0]
 
     def get_n_classes(self, name):
         return self.n_classes[name]
@@ -86,7 +89,7 @@ class TMscoreDataset:
         return [e_i for e_i in self.score_pairs.keys() if self.n_classes[e_i] > 0]
 
     def get_domain_scores(self, e_i):
-        _scores = sorted(self.score_pairs[e_i], key=itemgetter(1))
+        _scores = sorted([(e_j, s, tp, fp) for (e_j, s, tp, fp) in self.score_pairs[e_i] if self.n_classes[e_j] > 0], key=itemgetter(1))
         if self.reverse:
             _scores.reverse()
         return _scores
