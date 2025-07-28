@@ -26,15 +26,21 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--pdb-chain-ptm-scores', type=str, required=True)
+    parser.add_argument('--sequence-embeddings-scores', type=str, required=True)
     parser.add_argument('--tmvec-scores', type=str, required=True)
     parser.add_argument('--foldseek-scores', type=str, required=True)
+    parser.add_argument('--esm3-mean-scores', type=str, required=True)
+    parser.add_argument('--tmalign-scores', type=str, required=True)
     parser.add_argument('--tmscore-threshold', type=float, required=True)
     parser.add_argument('--out-path', type=str, required=True)
     args = parser.parse_args()
 
     pdb_chain_ptm_scores = args.pdb_chain_ptm_scores
+    sequence_embeddings_scores = args.sequence_embeddings_scores
     tmvec_scores = args.tmvec_scores
     foldseek_scores = args.foldseek_scores
+    esm3_mean_scores = args.esm3_mean_scores
+    tmalign_scores = args.tmalign_scores
     tmscore_threshold = args.tmscore_threshold
     out_path = args.out_path
 
@@ -47,6 +53,32 @@ if __name__ == '__main__':
         linspace(0, 1, len(sen_values)),
         [sen_values[i] for i in range(len(sen_values))],
         color='red', linestyle='-', label='Structure Embeddings'
+    )
+
+    dataloader = TMscoreDataset(
+        tmscore_file=pdb_chain_ptm_scores,
+        thr=tmscore_threshold,
+        alt_scores_file=sequence_embeddings_scores,
+        row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[2])),
+    )
+    sen_values = sensitivity_values(dataloader)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='orange', linestyle='-', label='Sequence Embeddings'
+    )
+
+    dataloader = TMscoreDataset(
+        tmscore_file=pdb_chain_ptm_scores,
+        thr=tmscore_threshold,
+        alt_scores_file=esm3_mean_scores,
+        row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[2])),
+    )
+    sen_values = sensitivity_values(dataloader)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='burlywood', linestyle='-', label='ESM3 Mean'
     )
 
     label='TMvec'
@@ -75,6 +107,20 @@ if __name__ == '__main__':
         linspace(0, 1, len(sen_values)),
         [sen_values[i] for i in range(len(sen_values))],
         color='dodgerblue', linestyle='--', label='Foldseek'
+    )
+
+    dataloader = TMscoreDataset(
+        tmscore_file=pdb_chain_ptm_scores,
+        thr=tmscore_threshold,
+        alt_scores_file=tmalign_scores,
+        row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[2])),
+    )
+    sen_values = sensitivity_values(dataloader)
+    sen_values.append(0)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='limegreen', linestyle='--', label='TMalign'
     )
 
     plt.xlabel('Fraction of Queries')

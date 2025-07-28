@@ -38,7 +38,6 @@ class TMscoreDataset:
         n_neg = 0
         print(f"Parsing {self.tmscore_file}")
         with open(self.tmscore_file, 'r') as f:
-            next(f)
             for r in f:
                 e_i, e_j, s, s_p = r.strip().split(',')
                 s = float(s)
