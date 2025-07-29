@@ -17,7 +17,7 @@ class TMscoreDataset:
         self.reverse = reverse
         self.score_pairs = {}
         self.n_classes = {}
-        self.fp_thr = 0.5
+        self.fp_thr = 0.4
         self.n_pos = 0
         self.alt_scores ={}
         if alt_scores_file is not None and row_parser is not None:
