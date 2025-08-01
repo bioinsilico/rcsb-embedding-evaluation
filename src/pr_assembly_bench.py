@@ -30,8 +30,8 @@ if __name__ == '__main__':
 
     label='Structure Embeddings'
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
-        alt_scores_file=structure_embeddings_scores,
+        ref_score_file=pdb_chain_ptm_scores,
+        alt_score_file=structure_embeddings_scores,
         thr=tmscore_threshold,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
@@ -42,9 +42,9 @@ if __name__ == '__main__':
 
     label='Sequence Embeddings'
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=sequence_embeddings_scores,
+        alt_score_file=sequence_embeddings_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     recall, precision = pr_curve(dataloader)
@@ -54,9 +54,9 @@ if __name__ == '__main__':
 
     label='ESM3 Mean'
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=esm3_mean_scores,
+        alt_score_file=esm3_mean_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     recall, precision = pr_curve(dataloader)
@@ -66,9 +66,9 @@ if __name__ == '__main__':
 
     label='Foldseek'
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=foldseek_scores,
+        alt_score_file=foldseek_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
 
@@ -79,9 +79,9 @@ if __name__ == '__main__':
 
     label = 'TMalign'
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=tmalign_scores,
+        alt_score_file=tmalign_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     recall, precision = pr_curve(dataloader)

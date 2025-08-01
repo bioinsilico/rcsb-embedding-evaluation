@@ -45,8 +45,8 @@ if __name__ == '__main__':
     out_path = args.out_path
 
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
-        alt_scores_file=structure_embeddings_scores,
+        ref_score_file=pdb_chain_ptm_scores,
+        alt_score_file=structure_embeddings_scores,
         thr=tmscore_threshold,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
@@ -58,9 +58,9 @@ if __name__ == '__main__':
     )
 
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=sequence_embeddings_scores,
+        alt_score_file=sequence_embeddings_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     sen_values = sensitivity_values(dataloader)
@@ -71,9 +71,9 @@ if __name__ == '__main__':
     )
 
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=esm3_mean_scores,
+        alt_score_file=esm3_mean_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     sen_values = sensitivity_values(dataloader)
@@ -84,9 +84,9 @@ if __name__ == '__main__':
     )
 
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=foldseek_scores,
+        alt_score_file=foldseek_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     sen_values = sensitivity_values(dataloader)
@@ -97,9 +97,9 @@ if __name__ == '__main__':
     )
 
     dataloader = TMscoreDataset(
-        tmscore_file=pdb_chain_ptm_scores,
+        ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
-        alt_scores_file=tmalign_scores,
+        alt_score_file=tmalign_scores,
         row_parser=lambda row: (row[0], row[1], float(row[2]))
     )
     sen_values = sensitivity_values(dataloader)

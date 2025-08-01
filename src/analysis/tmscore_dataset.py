@@ -5,23 +5,23 @@ class TMscoreDataset:
 
     def __init__(
         self,
-        tmscore_file,
+        ref_score_file,
         thr,
-        alt_scores_file=None,
-        row_parser=None,
-        reverse=True
+        alt_score_file,
+        row_parser,
+        reverse=True,
+        fp_thr=0.4
     ):
 
-        self.tmscore_file = tmscore_file
+        self.ref_score_file = ref_score_file
         self.tp_thr = thr
         self.reverse = reverse
         self.score_pairs = {}
         self.n_classes = {}
-        self.fp_thr = 0.4
+        self.fp_thr = fp_thr
         self.n_pos = 0
-        self.alt_scores ={}
-        if alt_scores_file is not None and row_parser is not None:
-            self.parse_alt_scores(alt_scores_file, row_parser)
+        self.alt_scores = {}
+        self.parse_alt_scores(alt_score_file, row_parser)
         self.load_embedding_pairs()
 
     def parse_alt_scores(self, alt_scores_file, row_parser):
@@ -36,18 +36,16 @@ class TMscoreDataset:
     def parse_score_file(self):
         n_pos = 0
         n_neg = 0
-        print(f"Parsing {self.tmscore_file}")
-        with open(self.tmscore_file, 'r') as f:
+        print(f"Parsing {self.ref_score_file}")
+        with open(self.ref_score_file, 'r') as f:
             for r in f:
-                e_i, e_j, s, s_p = r.strip().split(',')
-                s = float(s)
-                s_p = float(s_p)
-                if e_i in self.alt_scores and e_j in self.alt_scores[e_i]:
-                    s_p = self.alt_scores[e_i][e_j]
-                elif len(self.alt_scores) > 0:
-                    s_p = 0.0 if self.reverse else 1e6
+                e_i, e_j, s = r.strip().split(',')[0:3]
                 if e_i == e_j:
                     continue
+                s = float(s)
+                s_p = 0.0 if self.reverse else 1e6
+                if e_i in self.alt_scores and e_j in self.alt_scores[e_i]:
+                    s_p = self.alt_scores[e_i][e_j]
                 tp = 1 if s >= self.tp_thr else 0
                 fp = 1 if s < self.fp_thr else 0
                 if e_i not in self.n_classes:
