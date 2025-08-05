@@ -133,5 +133,5 @@ if __name__ == '__main__':
     plt.grid(True)
     plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/qs-chain-lddt-{score_threshold}-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/qs-chain-{score_threshold}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
