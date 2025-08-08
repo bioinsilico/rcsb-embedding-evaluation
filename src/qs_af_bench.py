@@ -2,33 +2,34 @@ import argparse
 
 from matplotlib import pyplot as plt
 from numpy import linspace
-from analysis.tmscore_dataset import TMscoreDataset
+
+from analysis.af_analysis_dataset import AfCathAnalysisDataset
 from qs_chain_bench import sensitivity_values
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--pdb-chain-ptm-scores', type=str, required=True)
+    parser.add_argument('--domain-class-file', type=str, required=True)
     parser.add_argument('--structure-embeddings-scores', type=str, required=True)
+    parser.add_argument('--sequence-embeddings-scores', type=str, required=True)
+    parser.add_argument('--tmvec-scores', type=str, required=True)
     parser.add_argument('--foldseek-scores', type=str, required=True)
-    parser.add_argument('--tmalign-scores', type=str, required=True)
-    parser.add_argument('--score-threshold', type=float, required=True)
+    parser.add_argument('--esm3-mean-scores', type=str, required=True)
     parser.add_argument('--out-path', type=str, required=True)
     args = parser.parse_args()
 
-    pdb_chain_ptm_scores = args.pdb_chain_ptm_scores
+    domain_class_file = args.domain_class_file
     structure_embeddings_scores = args.structure_embeddings_scores
+    sequence_embeddings_scores = args.sequence_embeddings_scores
+    tmvec_scores = args.tmvec_scores
     foldseek_scores = args.foldseek_scores
-    tmalign_scores = args.tmalign_scores
-    score_threshold = args.score_threshold
+    esm3_mean_scores = args.esm3_mean_scores
     out_path = args.out_path
 
-    label='Structure Embeddings'
-    dataloader = TMscoreDataset(
-        ref_score_file=pdb_chain_ptm_scores,
-        thr=score_threshold,
-        alt_score_file=structure_embeddings_scores,
-        row_parser=lambda row: row
+    dataloader = AfCathAnalysisDataset(
+        score_file=structure_embeddings_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[2])),
+        dom_class_file=domain_class_file
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -37,12 +38,46 @@ if __name__ == '__main__':
         color='red', linestyle='-', label='Structure Embeddings'
     )
 
-    dataloader = TMscoreDataset(
-        ref_score_file=pdb_chain_ptm_scores,
-        thr=score_threshold,
-        alt_score_file=foldseek_scores,
-        row_parser=lambda row: row,
-        reverse=False
+    dataloader = AfCathAnalysisDataset(
+        score_file=sequence_embeddings_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[2])),
+        dom_class_file=domain_class_file
+    )
+    sen_values = sensitivity_values(dataloader)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='orange', linestyle='-', label='Sequence Embeddings'
+    )
+
+    dataloader = AfCathAnalysisDataset(
+        score_file=esm3_mean_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[2])),
+        dom_class_file=domain_class_file
+    )
+    sen_values = sensitivity_values(dataloader)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='burlywood', linestyle='-', label='ESM3 Mean'
+    )
+
+    dataloader = AfCathAnalysisDataset(
+        score_file=tmvec_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[2])),
+        dom_class_file=domain_class_file
+    )
+    sen_values = sensitivity_values(dataloader)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='wheat', linestyle='--', label='TMvec'
+    )
+
+    dataloader = AfCathAnalysisDataset(
+        score_file=foldseek_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[11])),
+        dom_class_file=domain_class_file
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -51,26 +86,12 @@ if __name__ == '__main__':
         color='dodgerblue', linestyle='--', label='Foldseek'
     )
 
-    dataloader = TMscoreDataset(
-        ref_score_file=pdb_chain_ptm_scores,
-        thr=score_threshold,
-        alt_score_file=tmalign_scores,
-        row_parser=lambda row: row
-    )
-    sen_values = sensitivity_values(dataloader)
-    sen_values.append(0)
-    plt.plot(
-        linspace(0, 1, len(sen_values)),
-        [sen_values[i] for i in range(len(sen_values))],
-        color='limegreen', linestyle='--', label='TMalign'
-    )
-
     plt.xlabel('Fraction of Queries')
     plt.ylabel('Sensitivity')
-    plt.title(f"TP TMscore > {score_threshold}")
+    plt.title(f"CATH Topology")
     plt.grid(True)
     plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/qs-chain-tmscore-{score_threshold}-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/qs-af-topology-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
 
