@@ -79,7 +79,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=foldseek_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[10])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        score_reverse=False
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
