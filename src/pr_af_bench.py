@@ -15,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--tmvec-scores', type=str, required=True)
     parser.add_argument('--foldseek-scores', type=str, required=True)
     parser.add_argument('--esm3-mean-scores', type=str, required=True)
+    parser.add_argument('--tmalign-scores', type=str, required=True)
     parser.add_argument('--out-path', type=str, required=True)
     args = parser.parse_args()
 
@@ -24,6 +25,7 @@ if __name__ == '__main__':
     tmvec_scores = args.tmvec_scores
     foldseek_scores = args.foldseek_scores
     esm3_mean_scores = args.esm3_mean_scores
+    tmalign_scores = args.tmalign_scores
     out_path = args.out_path
 
     label='Structure Embeddings'
@@ -79,6 +81,17 @@ if __name__ == '__main__':
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='dodgerblue', linestyle='--', label=label)
+    pr_auc = auc(recall, precision)
+    print(f"AUC {label}", pr_auc)
+
+    label = 'TMalign'
+    dataloader = AfCathAnalysisDataset(
+        score_file=tmalign_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[2])),
+        dom_class_file=domain_class_file
+    )
+    recall, precision = pr_curve(dataloader)
+    plt.plot(recall, precision, color='limegreen', linestyle='--', label=label)
     pr_auc = auc(recall, precision)
     print(f"AUC {label}", pr_auc)
 

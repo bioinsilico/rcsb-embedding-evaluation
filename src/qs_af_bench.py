@@ -15,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--tmvec-scores', type=str, required=True)
     parser.add_argument('--foldseek-scores', type=str, required=True)
     parser.add_argument('--esm3-mean-scores', type=str, required=True)
+    parser.add_argument('--tmalign-scores', type=str, required=True)
     parser.add_argument('--out-path', type=str, required=True)
     args = parser.parse_args()
 
@@ -24,6 +25,7 @@ if __name__ == '__main__':
     tmvec_scores = args.tmvec_scores
     foldseek_scores = args.foldseek_scores
     esm3_mean_scores = args.esm3_mean_scores
+    tmalign_scores = args.tmalign_scores
     out_path = args.out_path
 
     dataloader = AfCathAnalysisDataset(
@@ -76,7 +78,7 @@ if __name__ == '__main__':
 
     dataloader = AfCathAnalysisDataset(
         score_file=foldseek_scores,
-        score_row_parser=lambda x: (x[0], x[1], float(x[11])),
+        score_row_parser=lambda x: (x[0], x[1], float(x[10])),
         dom_class_file=domain_class_file
     )
     sen_values = sensitivity_values(dataloader)
@@ -84,6 +86,18 @@ if __name__ == '__main__':
         linspace(0, 1, len(sen_values)),
         [sen_values[i] for i in range(len(sen_values))],
         color='dodgerblue', linestyle='--', label='Foldseek'
+    )
+
+    dataloader = AfCathAnalysisDataset(
+        score_file=tmalign_scores,
+        score_row_parser=lambda x: (x[0], x[1], float(x[2])),
+        dom_class_file=domain_class_file
+    )
+    sen_values = sensitivity_values(dataloader)
+    plt.plot(
+        linspace(0, 1, len(sen_values)),
+        [sen_values[i] for i in range(len(sen_values))],
+        color='limegreen', linestyle='--', label='TMalign'
     )
 
     plt.xlabel('Fraction of Queries')
