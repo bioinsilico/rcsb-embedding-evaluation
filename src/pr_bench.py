@@ -162,5 +162,5 @@ if __name__ == '__main__':
         results_path,
         out_path,
         Depth.scop_fold,
-        legend=True
+        legend=False
     )

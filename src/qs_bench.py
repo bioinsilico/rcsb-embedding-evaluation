@@ -151,7 +151,8 @@ if __name__ == '__main__':
         results_path,
         domain_class_file,
         out_path,
-        Depth.scop_family
+        Depth.scop_family,
+        legend=True
     )
 
     plot_sensitivity(
@@ -161,7 +162,8 @@ if __name__ == '__main__':
         results_path,
         domain_class_file,
         out_path,
-        Depth.scop_super_family
+        Depth.scop_super_family,
+        legend=False
     )
 
     plot_sensitivity(
@@ -172,5 +174,5 @@ if __name__ == '__main__':
         domain_class_file,
         out_path,
         Depth.scop_fold,
-        legend=True
+        legend=False
     )
