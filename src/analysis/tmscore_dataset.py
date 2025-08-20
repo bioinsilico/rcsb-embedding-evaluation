@@ -10,7 +10,7 @@ class TMscoreDataset:
         alt_score_file,
         row_parser,
         reverse=True,
-        fp_thr=0.4
+        fp_thr=0.5
     ):
 
         self.ref_score_file = ref_score_file
