@@ -17,6 +17,9 @@ def plot_pr(
     depth,
     legend=False
 ):
+    plt.figure(figsize=(8, 6))
+    plt.ylim(0, 1.1)
+
     label='Structure Embeddings'
     dataloader = AnalysisDataset(
         score_file=structure_embeddings_score,
