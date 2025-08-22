@@ -3,7 +3,7 @@ import argparse
 from matplotlib import pyplot as plt
 from sklearn.metrics import auc
 
-from analysis.af_analysis_dataset import AfCathAnalysisDataset
+from analysis.af_analysis_dataset import AfCathAnalysisDataset, Depth, cath_title
 from analysis.stats_tools import pr_curve
 
 if __name__ == '__main__':
@@ -28,11 +28,14 @@ if __name__ == '__main__':
     tmalign_scores = args.tmalign_scores
     out_path = args.out_path
 
+    depth = Depth.cath_archi
+
     label='Structure Embeddings'
     dataloader = AfCathAnalysisDataset(
         score_file=structure_embeddings_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='red', linestyle='-', label=label)
@@ -43,7 +46,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=sequence_embeddings_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='orange', linestyle='-', label=label)
@@ -54,7 +58,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=esm3_mean_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='burlywood', linestyle='-', label=label)
@@ -65,7 +70,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=tmvec_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='wheat', linestyle='--', label=label)
@@ -77,7 +83,8 @@ if __name__ == '__main__':
         score_file=foldseek_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[11])),
         dom_class_file=domain_class_file,
-        score_reverse=True
+        score_reverse=True,
+        depth=depth
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='dodgerblue', linestyle='--', label=label)
@@ -88,7 +95,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=tmalign_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='limegreen', linestyle='--', label=label)
@@ -98,10 +106,9 @@ if __name__ == '__main__':
 
     plt.xlabel('Recall')
     plt.ylabel('Precision')
-    plt.title(f"CATH Topology")
+    plt.title(f"CATH {cath_title(depth)}")
     plt.grid(True)
-    plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/pr-af-topology-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/pr-af-{cath_title(depth).lower()}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
 

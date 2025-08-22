@@ -64,7 +64,7 @@ if __name__ == '__main__':
     pr_auc = auc(recall, precision)
     print(f"AUC {label}", pr_auc)
 
-    label='Foldseek'
+    label='Foldseek-MM'
     dataloader = TMscoreDataset(
         ref_score_file=pdb_chain_ptm_scores,
         thr=tmscore_threshold,
@@ -95,7 +95,6 @@ if __name__ == '__main__':
     plt.ylabel('Precision')
     plt.title(f"TP TMscore > {tmscore_threshold}")
     plt.grid(True)
-    plt.legend(loc='best')
     plt.axis('square')
     plt.savefig(f"{out_path}/pr-assembly-{tmscore_threshold}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()

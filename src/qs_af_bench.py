@@ -3,7 +3,7 @@ import argparse
 from matplotlib import pyplot as plt
 from numpy import linspace
 
-from analysis.af_analysis_dataset import AfCathAnalysisDataset
+from analysis.af_analysis_dataset import AfCathAnalysisDataset, Depth, cath_title
 from qs_chain_bench import sensitivity_values
 
 if __name__ == '__main__':
@@ -28,10 +28,13 @@ if __name__ == '__main__':
     tmalign_scores = args.tmalign_scores
     out_path = args.out_path
 
+    depth = Depth.cath_archi
+
     dataloader = AfCathAnalysisDataset(
         score_file=structure_embeddings_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -43,7 +46,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=sequence_embeddings_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -55,7 +59,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=esm3_mean_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -67,7 +72,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=tmvec_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -80,7 +86,8 @@ if __name__ == '__main__':
         score_file=foldseek_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[10])),
         dom_class_file=domain_class_file,
-        score_reverse=False
+        score_reverse=False,
+        depth=depth
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -92,7 +99,8 @@ if __name__ == '__main__':
     dataloader = AfCathAnalysisDataset(
         score_file=tmalign_scores,
         score_row_parser=lambda x: (x[0], x[1], float(x[2])),
-        dom_class_file=domain_class_file
+        dom_class_file=domain_class_file,
+        depth=depth
     )
     sen_values = sensitivity_values(dataloader)
     plt.plot(
@@ -103,10 +111,10 @@ if __name__ == '__main__':
 
     plt.xlabel('Fraction of Queries')
     plt.ylabel('Sensitivity')
-    plt.title(f"CATH Topology")
+    plt.title(f"CATH {cath_title(depth)}")
     plt.grid(True)
     plt.legend(loc='best')
     plt.axis('square')
-    plt.savefig(f"{out_path}/qs-af-topology-benchmark.png", bbox_inches='tight', dpi=300)
+    plt.savefig(f"{out_path}/qs-af-{cath_title(depth).lower()}-benchmark.png", bbox_inches='tight', dpi=300)
     plt.show()
 

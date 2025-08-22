@@ -25,6 +25,15 @@ def is_fp(d_i, d_j):
             return False
     return True
 
+def cath_title(depth):
+    if depth == Depth.cath_class:
+        return "Class"
+    if depth == Depth.cath_archi:
+        return "Architecture"
+    if depth == Depth.cath_topol:
+        return "Topology"
+    return None
+
 class Depth:
     cath_class = 1
     cath_archi = 2
@@ -84,8 +93,6 @@ class AfCathAnalysisDataset(TMscoreDataset):
             d_j = self.embeddings_classes[e_j]
             tp = 1 if is_tp(self.depth, d_i, d_j) else 0
             fp = 1 if is_fp(d_i, d_j) else 0
-            #if fp ==1 and s > 0.8:
-            #    print(e_i, e_j)
             n_pos += tp
             n_neg += fp
             yield e_i, e_j, s, tp, fp
