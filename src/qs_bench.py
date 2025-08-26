@@ -76,7 +76,7 @@ def plot_sensitivity(
     plt.plot(
         linspace(0, 1, len(values)),
         [values[i] for i in range(len(values))],
-        color='limegreen', linestyle='--', label='TMalign'
+        color='limegreen', linestyle='--', label='US-align'
     )
 
     values = qs_scores(
