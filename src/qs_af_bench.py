@@ -28,7 +28,7 @@ if __name__ == '__main__':
     tmalign_scores = args.tmalign_scores
     out_path = args.out_path
 
-    depth = Depth.cath_archi
+    depth = Depth.cath_topol
 
     dataloader = AfCathAnalysisDataset(
         score_file=structure_embeddings_scores,
@@ -106,7 +106,7 @@ if __name__ == '__main__':
     plt.plot(
         linspace(0, 1, len(sen_values)),
         [sen_values[i] for i in range(len(sen_values))],
-        color='limegreen', linestyle='--', label='TMalign'
+        color='limegreen', linestyle='--', label='US-align'
     )
 
     plt.xlabel('Fraction of Queries')
