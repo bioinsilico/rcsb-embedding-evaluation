@@ -51,7 +51,7 @@ def plot_sensitivity(
     plt.plot(
         linspace(0, 1, len(values)),
         [values[i] for i in range(len(values))],
-        color='limegreen', linestyle='--', label='TMalign'
+        color='limegreen', linestyle='--', label='US-align'
     )
 
     plt.xlabel('Fraction of Queries')
@@ -86,23 +86,5 @@ if __name__ == '__main__':
         results_path,
         out_path,
         Depth.scop_family,
-        out_tag
-    )
-
-    plot_sensitivity(
-        structure_embedding_folder,
-        domain_class_file,
-        results_path,
-        out_path,
-        Depth.scop_super_family,
-        out_tag
-    )
-
-    plot_sensitivity(
-        structure_embedding_folder,
-        domain_class_file,
-        results_path,
-        out_path,
-        Depth.scop_fold,
         out_tag
     )

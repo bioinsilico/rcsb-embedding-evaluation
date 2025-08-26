@@ -42,7 +42,7 @@ def plot_pr(
     pr_auc = auc(recall, precision)
     print(f"AUC {label}", pr_auc)
 
-    label='TMalign'
+    label='US-align'
     dataloader.reload_embedding_pairs(
         score_file=f"{results_path}/TMalign-exc-{out_tag}.txt",
         score_row_parser=lambda row: (row[0], row[1], float(row[2]))
@@ -57,7 +57,8 @@ def plot_pr(
     plt.ylabel('Precision')
     plt.title(depth_name(depth))
     plt.grid(True)
-    plt.legend(loc='best')
+    if legend:
+        plt.legend(loc='best')
     plt.axis('square')
     plt.savefig(f"{out_path}/pr-{depth}-exc-{out_tag}-benchmark.png", bbox_inches='tight', dpi=300)
 
@@ -87,24 +88,3 @@ if __name__ == '__main__':
         out_tag,
         legend=False
     )
-
-    plot_pr(
-        structure_embeddings_score ,
-        domain_class_file,
-        results_path,
-        out_path,
-        Depth.scop_super_family,
-        out_tag,
-        legend=False
-    )
-
-    plot_pr(
-        structure_embeddings_score ,
-        domain_class_file,
-        results_path,
-        out_path,
-        Depth.scop_fold,
-        out_tag,
-        legend=False
-    )
-
