@@ -124,7 +124,7 @@ if __name__ == '__main__':
     plt.plot(
         linspace(0, 1, len(sen_values)),
         [sen_values[i] for i in range(len(sen_values))],
-        color='limegreen', linestyle='--', label='US-align'
+        color='limegreen', linestyle='--', label='US-align *'
     )
 
     plt.xlabel('Fraction of Queries')
