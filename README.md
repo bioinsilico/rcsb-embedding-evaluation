@@ -1,8 +1,12 @@
 # RCSB Embedding Evaluation
 
+## Overview
 This repository contains scripts and utilities for evaluating the quality of protein structure and sequence embeddings.  
 The tools compare embedding-based similarity measures against structural classification benchmarks such as SCOPe or CATH and 
 against classical alignment methods (Foldseek, TMalign, Dali, TMvec, BioZernike).
+
+Preprint: [Multi-scale structural similarity embedding search across entire proteomes](https://www.biorxiv.org/content/10.1101/2025.02.28.640875v1).
+
 
 ## Features
 - Precision–recall benchmarking of embedding scores (`src/pr_bench.py` and related scripts).
