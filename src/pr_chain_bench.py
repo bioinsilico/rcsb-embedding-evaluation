@@ -47,7 +47,7 @@ if __name__ == '__main__':
         ref_score_file=pdb_chain_ptm_scores,
         thr=score_threshold,
         alt_score_file=sequence_embeddings_scores,
-        row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[2])),
+        row_parser=lambda row: row,
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='orange', linestyle='-', label=label)
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         ref_score_file=pdb_chain_ptm_scores,
         thr=score_threshold,
         alt_score_file=esm3_mean_scores,
-        row_parser=lambda row: (row[0].replace("-","."), row[1].replace("-","."), float(row[2])),
+        row_parser=lambda row: row,
     )
     recall, precision = pr_curve(dataloader)
     plt.plot(recall, precision, color='burlywood', linestyle='-', label=label)
