@@ -208,7 +208,8 @@ def compute_sensitivities(results_path, fmt, query_scop, subject_scop):
 
     for query, matches in read_results(results_path, fmt):
         if query not in query_scop:
-            continue
+            raise BaseException(f"Unknown {query} in {results_path}")
+
         q_fam = query_scop[query]
         q_up = uniprot_of_query(query)
 
