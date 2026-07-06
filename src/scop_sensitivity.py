@@ -191,6 +191,25 @@ def read_results_tsv(path):
         yield q, [target for *_, target in rows]
 
 
+def read_results_foldmatch(path):
+    """
+    CSV with header including at least: Query, Rank, Match, Evalue_approx.
+    Lower Evalue_approx is better (same as e-value). Rank used as tiebreaker.
+    """
+    rows_by_query = defaultdict(list)
+    with open(path, newline="") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            query = row["Query"]
+            rank = int(row["Rank"])
+            match = row["Match"]
+            score = float(row["Evalue_approx"])
+            rows_by_query[query].append((score, rank, match))
+    for q, rows in rows_by_query.items():
+        rows.sort()
+        yield q, [match for *_, match in rows]
+
+
 def read_results(path, fmt):
     if fmt == "csv":
         return read_results_csv(path)
@@ -199,6 +218,8 @@ def read_results(path, fmt):
         return read_results_mmseqs(path)
     if fmt == "tsv":
         return read_results_tsv(path)
+    if fmt == "foldmatch":
+        return read_results_foldmatch(path)
     raise ValueError(f"Unknown format: {fmt}")
 
 
@@ -278,12 +299,13 @@ def main():
         "--format",
         required=True,
         action="append",
-        choices=["csv", "mmseqs", "blast", "tsv"],
+        choices=["csv", "mmseqs", "blast", "tsv", "foldmatch"],
         help=(
             "Format for each --results in order. "
             "csv = Query,Rank,Match,Score header; "
             "mmseqs/blast = 12-col TSV (-outfmt 6 style, evalue ascending); "
-            "tsv = 4-col TSV (query, subject, score1, score2; score1 descending)."
+            "tsv = 4-col TSV (query, subject, score1, score2; score1 descending); "
+            "foldmatch = CSV with Query,Rank,Match,EmbScore,...,Evalue_approx header (evalue ascending)."
         ),
     )
     ap.add_argument("--query-fasta", required=True, type=Path)
