@@ -37,43 +37,38 @@ def parse_fasta_headers(path):
             yield parts[0], (parts[1] if len(parts) > 1 else "")
 
 
-def scop_family(token):
-    """First whitespace-separated token of the header rest, expected like 'a.4.5.5'."""
-    token = token.strip()
-    if not token:
-        return None
-    first = token.split()[0]
-    if first.count(".") != 3:
-        return None
-    return first
+def parse_scop_families(text):
+    """Return the set of SCOP family tokens ('a.b.c.d') found before the first '|' separator."""
+    text = text.strip()
+    if not text:
+        return set()
+    # SCOP ids appear before the first '|' delimiter
+    before_pipe = text.split("|")[0]
+    fams = set()
+    for token in before_pipe.split():
+        if token.count(".") == 3:
+            fams.add(token)
+    return fams
 
 
 def load_query_scop(query_fasta):
-    """query_id -> SCOP family string 'a.b.c.d'."""
+    """query_id -> set of SCOP family strings {'a.b.c.d', ...}."""
     out = {}
     for qid, rest in parse_fasta_headers(query_fasta):
-        fam = scop_family(rest)
-        if fam is not None:
-            out[qid] = fam
+        fams = parse_scop_families(rest)
+        if fams:
+            out[qid] = fams
     return out
 
 
 def load_subject_scop(subject_fasta):
-    """
-    subject_id -> set of SCOP families (only populated for annotated_* entries).
-    Unannotated entries are recorded with an empty set so we can distinguish
-    'known but unannotated' from 'unknown id'.
-    """
+    """subject_id -> set of SCOP families for annotated_* entries."""
     out = defaultdict(set)
     for sid, rest in parse_fasta_headers(subject_fasta):
         if sid.startswith("annotated_"):
-            fam = scop_family(rest)
-            if fam is not None:
-                out[sid].add(fam)
-            else:
-                out[sid]  # ensure key exists
-        else:
-            out[sid]  # known but unannotated
+            fams = parse_scop_families(rest)
+            if fams:
+                out[sid] |= fams
     return dict(out)
 
 
@@ -99,14 +94,18 @@ def fold_of(fam):
     return f"{a}.{b}"
 
 
-def classify(query_fam, subject_fams):
-    """Return 'TP', 'FP', or 'IGNORE'."""
+def classify(query_fams, subject_fams):
+    """Return 'TP', 'FP', or 'IGNORE'.
+
+    query_fams: set of SCOP families for the query.
+    subject_fams: set of SCOP families for the subject.
+    """
     if not subject_fams:
         return "FP"
-    if query_fam in subject_fams:
+    if query_fams & subject_fams:
         return "TP"
-    q_fold = fold_of(query_fam)
-    if any(fold_of(f) == q_fold for f in subject_fams):
+    q_folds = {fold_of(f) for f in query_fams}
+    if any(fold_of(f) in q_folds for f in subject_fams):
         return "IGNORE"
     return "FP"
 
@@ -231,20 +230,27 @@ def compute_sensitivities(results_path, fmt, query_scop, subject_scop):
         if query not in query_scop:
             raise BaseException(f"Unknown {query} in {results_path}")
 
-        q_fam = query_scop[query]
+        q_fams = query_scop[query]
         q_up = uniprot_of_query(query)
 
-        # Denominator: annotated subjects sharing the family, minus the query itself.
-        possible = fam_to_uniprots.get(q_fam, set()) - {q_up}
+        # Denominator: union of annotated subjects sharing any query family, minus the query itself.
+        possible = set()
+        for fam in q_fams:
+            possible |= fam_to_uniprots.get(fam, set())
+        possible -= {q_up}
         if not possible:
             continue
 
         tp_before_fp = 0
+        match_observed = set()
         for match in matches:
+            if match in match_observed:
+                continue
+            match_observed.add(match)
             if uniprot_of_subject(match) == q_up:
                 continue  # exclude self-match
             subject_fams = subject_scop.get(match, set())
-            label = classify(q_fam, subject_fams)
+            label = classify(q_fams, subject_fams)
             if label == "TP":
                 tp_before_fp += 1
             elif label == "IGNORE":
@@ -252,6 +258,8 @@ def compute_sensitivities(results_path, fmt, query_scop, subject_scop):
             else:  # FP
                 break
 
+        if tp_before_fp > len(possible):
+            raise ValueError(f"More true positives ({tp_before_fp}) than possible positives ({len(possible)}) for query {query} in {results_path}")
         sensitivities[query] = tp_before_fp / len(possible)
 
     return sensitivities
