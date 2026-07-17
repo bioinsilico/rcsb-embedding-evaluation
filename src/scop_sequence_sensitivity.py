@@ -262,6 +262,20 @@ def compute_sensitivities(results_path, fmt, query_scop, subject_scop):
             raise ValueError(f"More true positives ({tp_before_fp}) than possible positives ({len(possible)}) for query {query} in {results_path}")
         sensitivities[query] = tp_before_fp / len(possible)
 
+    # Queries present in query_scop with possible TPs but absent from the
+    # results file are assigned sensitivity 0 so every method uses the same
+    # query set.
+    for query, q_fams in query_scop.items():
+        if query in sensitivities:
+            continue
+        q_up = uniprot_of_query(query)
+        possible = set()
+        for fam in q_fams:
+            possible |= fam_to_uniprots.get(fam, set())
+        possible -= {q_up}
+        if possible:
+            sensitivities[query] = 0.0
+
     return sensitivities
 
 
@@ -280,9 +294,12 @@ def plot(series, out_path):
 
     ax.set_xlabel("Fraction of queries")
     ax.set_ylabel("Sensitivity to first false positive")
+    ticks = [0, 0.25, 0.5, 0.75, 1.0]
+    ax.set_xticks(ticks)
+    ax.set_yticks(ticks)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1.02)
-    ax.grid(True, alpha=0.3)
+    ax.grid(True, alpha=1)
     if len(series) > 1:
         ax.legend()
     fig.tight_layout()
